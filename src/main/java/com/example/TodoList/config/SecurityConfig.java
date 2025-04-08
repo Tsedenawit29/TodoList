@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,10 +24,13 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll() // Allow H2 console in development
                         .anyRequest().authenticated()
                 )
-                .httpBasic() // Enable basic authentication
-                .and()
-                .csrf().disable() // Disable CSRF for simplicity (enable in production)
-                .headers().frameOptions().disable(); // Allow frames for H2 console
+                .httpBasic(basic -> basic.realmName("TodoList API")) // Configure basic auth
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**") // Disable CSRF for H2 console
+                )
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable) // New way to disable frame options
+                );
 
         return http.build();
     }
